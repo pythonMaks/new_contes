@@ -1,0 +1,30 @@
+{% extends "main/base.html" %}
+
+{% block content %}
+    <h1>{{ title }}</h1>
+    {% if products %}
+        <ul>
+        {% for product in products %}
+        <li>
+        {{ product.name }}
+        {{ product.content }}
+        </li>
+        {% endfor %}
+        </ul>
+        {% if page_obj.has_previous or page_obj.has_next %}
+            <nav>
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}">предыдущая</a>
+            {% endif %}
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">следующая</a>
+            {% endif %}
+            </nav>
+        {% endif %}
+    {% else %}
+        <p>Нет коментов.</p>    
+    {% endif %}
+
+
+{% endblock %}
+

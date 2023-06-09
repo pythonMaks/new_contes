@@ -1,0 +1,25 @@
+{% extends "main/base.html" %}
+{% block content %}
+<form method="post" action="">
+    {% csrf_token %}
+    <br>
+    <select name="language">
+        <option value="python" {% if language == 'python' %}selected{% endif %}>Python</option>
+        <option value="kotlinc" {% if language == 'kotlinc' %}selected{% endif %}>Kotlin</option>
+        <option value="node" {% if language == 'node' %}selected{% endif %}>JavaScript</option>
+        <option value="javac" {% if language == 'javac' %}selected{% endif %}>Java</option>
+    </select>
+    <br><br>
+<textarea  name="interpreter" rows="20" cols="60"></textarea>
+<input type="submit" value="Выполнить" name="enter">
+</form>
+<br>
+{% if posts %}
+{% for i in posts %}
+{{ i }}<br>
+{% endfor %}
+{% endif %}
+{% if error %}
+{{ error }}
+{% endif %}
+{% endblock content %}

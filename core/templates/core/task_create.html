@@ -1,0 +1,14 @@
+{% extends 'main/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+  <h2>Создать новую задачу</h2>
+  <form method="POST">
+    {% csrf_token %}
+   <h5> {{ form|crispy }}</h5>
+    <button type="submit" class="btn btn-primary">Создать</button>
+  </form>
+
+
+{% endblock %}

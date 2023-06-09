@@ -1,0 +1,25 @@
+{% extends "main/base.html" %}
+{% block content %}
+<form method="post" action="">
+    {% csrf_token %}
+    <br>
+    <select name="language">
+        <option value="python">Python</option>
+        <option value="kotlinc">Kotlin</option>
+        <option value="node">JavaScript</option>
+        <option value="javac">Java</option>
+    </select>
+    <br><br>
+<textarea  name="interpreter" rows="20" cols="60"></textarea>
+<input type="submit" value="Выполнить" name="enter">
+</form>
+<br>
+{% if posts %}
+{% for i in posts %}
+{{ i }}<br>
+{% endfor %}
+{% endif %}
+{% if error %}
+{{ error }}
+{% endif %}
+{% endblock content %}
