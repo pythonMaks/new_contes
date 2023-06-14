@@ -9,9 +9,9 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <a class="navbar-brand" >ITcontest</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo02" aria-controls="navbarTogglerDemo02" aria-expanded="false" aria-label="Toggle navigation">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">    
+    <a class="navbar-brand" ><img src="/static/images/logo.png" alt="Logo" class="img-fluid" style="max-height: 75px;"></a>
+    <button class="navbar-toggler ml-auto" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo02" aria-controls="navbarTogglerDemo02" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
   
@@ -23,9 +23,11 @@
         <li class="nav-item">
           <a class="nav-link" href="{% url 'task_list' %}">Задачи</a>
         </li>
+        {% if user.is_authenticated and user.choice == '2'%}
         <li class="nav-item">
           <a class="nav-link" href="{% url 'task_create' %}">Создать задание</a>
         </li>
+        {% endif %}
         <!-- <li class="nav-item">
           <a class="nav-link" href="{% url 'guestbook' %}">Гостевая</a>
         </li> -->
@@ -97,30 +99,38 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.1.0/js/bootstrap.bundle.min.js"></script>
     <script>
       function toggleTheme() {
-          var theme = document.getElementById("theme");
-          if (theme.getAttribute("href") === "{% static 'css/styles-light.css' %}") {
-              theme.setAttribute("href", "{% static 'css/styles-dark.css' %}");
-              localStorage.setItem("theme", "dark");
-          } else {
-              theme.setAttribute("href", "{% static 'css/styles-light.css' %}");
-              localStorage.setItem("theme", "light");
-          }
+        var theme = document.getElementById("theme");
+        
+        if (theme.getAttribute("href") === "{% static 'css/styles-light.css' %}") {
+          theme.setAttribute("href", "{% static 'css/styles-dark.css' %}");
+          localStorage.setItem("theme", "dark");
+        } else {
+          theme.setAttribute("href", "{% static 'css/styles-light.css' %}");
+          localStorage.setItem("theme", "light");
+        }
       }
-  
+    
       var savedTheme = localStorage.getItem("theme");
       if (savedTheme) {
-          var theme = document.getElementById("theme");
-          if (savedTheme === "dark") {
-              theme.setAttribute("href", "{% static 'css/styles-dark.css' %}");
-          } else {
-              theme.setAttribute("href", "{% static 'css/styles-light.css' %}");
-          }
+        var theme = document.getElementById("theme");
+        
+        if (savedTheme === "dark") {
+          theme.setAttribute("href", "{% static 'css/styles-dark.css' %}");
+        } else {
+          theme.setAttribute("href", "{% static 'css/styles-light.css' %}");
+        }
       }
-  </script>
+    </script>
+    <script>
+    function removeBackground() {
+      document.body.style.backgroundImage = "none";
+  }
+</script>
     {% block extra_js %}{% endblock %}
 
 <footer>
   <p><a href="{% url 'blog-home' %}">© ITcontestKG 2023</a></p>
+  <button class="btn btn-link nav-link remove-bg-button" onclick="removeBackground()">Убрать задний фон</button>
 </footer>
 </main>
 </body>

@@ -1,5 +1,11 @@
 /* Body Styles */
 body {
+  background: url('../images/lighttheme.png') no-repeat center center fixed;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+    color: rgb(0, 0, 0);
     background-color: #f8f8f8;
     color: #333;
   }
@@ -19,7 +25,7 @@ body {
   /* Navigation Styles */
   nav {
     display: flex;
-    justify-content: center;
+    justify-content: right;
     align-items: center;
   
   }
@@ -74,7 +80,15 @@ body {
     width: 100%; 
     text-align: center;
     height: 5vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     
+  }
+  .remove-bg-button {
+    position: absolute;
+    right: 2px;
+    bottom: 2px;
   }
   .home{
     
@@ -92,4 +106,23 @@ body {
   main {
     padding-bottom: 6vh; /* высота футера */
   }
-  
+  h1 {
+    color: rgb(2, 1, 1);
+    text-shadow:
+      -2px -2px 0 rgb(255, 255, 255),  
+      2px -2px 0 rgb(255, 255, 255), 
+      -2px 2px 0 rgb(255, 255, 255), 
+       2px 2px 0 rgb(255, 255, 255);
+  }
+
+  h3 {
+    color: rgb(3, 3, 3);
+    text-shadow:
+      -2px -2px 0  rgb(255, 255, 255),  
+      2px -2px 0 rgb(255, 255, 255), 
+      -2px 2px 0 rgb(255, 255, 255), 
+       2px 2px 0 rgb(255, 255, 255); 
+  }
+  .navbar-toggler {
+    float: right; /* или margin-left: auto; */
+  }

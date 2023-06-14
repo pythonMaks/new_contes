@@ -2,8 +2,13 @@
 
 body {
     
-    background-color: #333333;
-    color: #ffffff;
+  background: url('../images/darktheme.png') no-repeat center center fixed;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+  background-color: #333333;
+  color: #ffffff;
   }
   
   pre {
@@ -56,7 +61,7 @@ body {
     list-style: none;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content:  right;
    
   }
   .nav-item {
@@ -114,7 +119,15 @@ body {
     width: 100%; 
     text-align: center;
     height: 5vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     
+  }
+  .remove-bg-button {
+    position: absolute;
+    right: 2px;
+    bottom: 2px;
   }
   .home{
     
@@ -124,3 +137,22 @@ body {
   main {
     padding-bottom: 6vh; /* высота футера */
   }
+
+  h1 {
+    color: white;
+    text-shadow:
+      -1px -1px 0 #000,  
+      1px -1px 0 #000,
+      -1px 1px 0 #000,
+       1px 1px 0 #000;
+  }
+
+  h3 {
+    color: white;
+    text-shadow:
+      -1px -1px 0 #000,  
+      1px -1px 0 #000,
+      -1px 1px 0 #000,
+       1px 1px 0 #000;
+  }
+
