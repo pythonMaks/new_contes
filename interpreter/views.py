@@ -4,53 +4,47 @@ from django.contrib.auth.decorators import login_required
 import chardet
 import os
 
-#os.environ['_JAVA_OPTIONS'] = ''
- 
+import docker
+
 def execute_code(code, language):
+    client = docker.from_env()
+
+    # Используем существующий контейнер, если он существует. Если нет, создаем новый.
+    try:
+        container = client.containers.get('your_container_name')
+    except docker.errors.NotFound:
+        container = client.containers.run('your_image', name='your_container_name', detach=True)
+
     com_err = ''
     error = ''
+    output = ''
+
     if language == 'python':
-        process = Popen(['python', '-c', code], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        _, output = container.exec_run(['python', '-c', code])
     elif language == 'kotlinc':
-        # Сохраняем код в файл и компилируем его с помощью kotlinc
-        with open('scrip.kt', 'w') as f:
-            f.write(code)
-        com_process = Popen(['kotlinc', 'scrip.kt', '-include-runtime', '-d', 'scrip.jar'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
-        com_out, com_err = com_process.communicate()
-        if com_err:
-            encoding = chardet.detect(com_err)['encoding']  
-            com_err = com_err.decode(encoding).strip()
-        process = Popen(['java', '-jar', 'scrip.jar'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        container.exec_run(['bash', '-c', f'echo "{code}" > script.kt'])
+        com_err, _ = container.exec_run(['kotlinc', 'script.kt', '-include-runtime', '-d', 'script.jar'])
+        _, output = container.exec_run(['java', '-jar', 'script.jar'])
+        container.exec_run(['rm', 'script.kt', 'script.jar'])  # Удаляем созданные файлы
     elif language == 'node':
-        process = Popen(['node', '-e', code], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        _, output = container.exec_run(['node', '-e', code])
     elif language == 'javac':
-        with open('Main.java','w') as f:
-            f.write(code)
-        compile = Popen(['javac', 'Main.java'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
-        compile_out, compile_err = compile.communicate()
-        if compile_err:
-            encoding = chardet.detect(compile_err)['encoding']  
-            com_err =  compile_err.decode(encoding).strip()
-        process = Popen(['java', 'Main'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        container.exec_run(['bash', '-c', f'echo "{code}" > Main.java'])
+        com_err, _ = container.exec_run(['javac', 'Main.java'])
+        _, output = container.exec_run(['java', 'Main'])
+        container.exec_run(['rm', 'Main.java', 'Main.class'])  # Удаляем созданные файлы
     else:
         return '', 'Invalid language'
-    output, error = process.communicate()
-    if error:
-        encoding = chardet.detect(error)['encoding']  
-        error =  error.decode(encoding).strip()
-    posts = []
-    try:
-        encoding = chardet.detect(output)['encoding']
-        posts.append(output.decode(encoding).strip())
-    except:
-        pass   
-    with open('scrip.kt', 'w') as f:
-        f.write('')
-    with open('scrip.jar', 'w') as f:
-        f.write('')
-    with open('Main.java', 'w') as f:
-        f.write('')
-    return posts,  com_err or error
+
+    # Получение вывода и ошибок
+    if output:
+        output = output.decode().strip()
+
+    if com_err:
+        com_err = com_err.decode().strip()
+
+    return output, com_err or error
+
 
 
 
