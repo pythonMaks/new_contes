@@ -14,7 +14,7 @@ def execute_code(code, language):
         container = client.containers.get('your_container_name')
     except docker.errors.NotFound:
         container = client.containers.run('your_image', name='your_container_name', detach=True)
-
+        container = client.containers.run('runcode', name='runcode_container', detach=True, volumes={'/var/run/docker.sock': {'bind': '/var/run/docker.sock', 'mode': 'rw'}})
     com_err = ''
     error = ''
     output = ''
