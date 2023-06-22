@@ -7,7 +7,10 @@ from django.contrib.auth.decorators import login_required
 import chardet
 from django.core.paginator import Paginator
 from django.db.models import Q
-
+import docker
+import shlex
+import base64
+import logging
 
 @login_required
 def task_create(request):
@@ -84,8 +87,72 @@ def task_detail(request, slug):
 #'kotlinc', '-script'
 #'python', '-c'
 #'node', '-e'
+
+def execute_code(code, language, input_data):
+    client = docker.from_env()
+    logger = logging.getLogger(__name__)
+    volume_name = "my_code_execution_volume_"
+    try:
+        volume = client.volumes.get(volume_name)
+    except docker.errors.NotFound:
+        volume = client.volumes.create(volume_name)
+
+    image_name = 'pythonmaks/contest'
+
+    if language == 'python':
+        code_command = f'python3 -c {shlex.quote(f"""{code}""")} < /code/input.txt'
+    elif language == 'java':
+        code_command = (f'echo {shlex.quote(code)} > /code/Main.java && '
+                        f'javac /code/Main.java && '
+                        f'java -cp /code Main < /code/input.txt')
+    elif language == 'node':
+        code_command = f'node -e {shlex.quote(code)} < /code/input.txt'
+    elif language == 'kotlinc':
+        code_command = (f'echo {shlex.quote(code)} > /code/Main.kt && '
+                        f'kotlinc /code/Main.kt -include-runtime -d /code/main.jar && '
+                        f'java -jar /code/main.jar < /code/input.txt')
+   '''  elif language == 'kotlinc':
+        code_command = (f'echo {shlex.quote(code)} > /code/Main.kts && '
+                        f'kotlinc -script /code/Main.kts < /code/input.txt')
+                        
+                        '''
+    else:
+        raise ValueError(f'Unsupported language: {language}')
+
+    input_data_command = f'echo {shlex.quote(input_data)} > /code/input.txt; {code_command}; rm -rf /code/*'
+
+    container = client.containers.run(image_name,
+                                      volumes={volume_name: {'bind': '/code', 'mode': 'rw'}},
+                                      command=['/bin/sh', '-c', input_data_command],
+                                      detach=True, working_dir="/code")
+
+    container.wait()
+
+    stdout = container.logs(stdout=True, stderr=False)
+    stderr = container.logs(stdout=False, stderr=True)
+
+    container.remove()
+
+    if stdout:
+        if isinstance(stdout, bytes):
+            stdout_encoding = chardet.detect(stdout)['encoding']
+            stdout = stdout.decode(stdout_encoding).strip()
+
+    if stderr:
+        if isinstance(stderr, bytes):
+            stderr_encoding = chardet.detect(stderr)['encoding']
+            stderr = stderr.decode(stderr_encoding).strip()
+        logger.info(stderr)
+
+    return stdout, stderr
+
+
+
+
+    
 @login_required
 def submission_detail(request, pk):
+    logger = logging.getLogger(__name__)
     submission = get_object_or_404(Submission, pk=pk)
     task = submission.task
     submission.prepod = submission.task.prepod
@@ -95,50 +162,33 @@ def submission_detail(request, pk):
                 'kotlinc': '-script'
     }
     
-   
     input_data = (task.input.strip(), task.input1.strip(), task.input2.strip(),)
     expected_output = (task.output.strip(), task.output1.strip(), task.output2.strip(),)
                         
     passed = []   
     error = [] 
     output = []
-    # Выполняем код студента в отдельном процессе с использованием входных данных
-    # и получаем результат выполнения
+
     for i in range(3):
-        if input_data[i] and expected_output[i]:            
-            from subprocess import Popen, PIPE
-            from os import path, getcwd
-            if task.language == 'java':
-                java_file_path = path.join(getcwd(), 'Main.java')
-                with open(java_file_path, 'w') as f:
-                    f.write(submission.code)
-                compile_process = Popen(['javac', java_file_path], stderr=PIPE)
-                compile_output, compile_error = compile_process.communicate()
-                if compile_error:
-                    error.append(compile_error.decode('utf-8').strip())
-                    continue
-            
-            if task.language == 'kotlinc':
-                with open('script.kt', 'w') as f:
-                    f.write(submission.code)
-                compile_kotlin = Popen(['kotlinc', 'script.kt', '-include-runtime', '-d', 'script.jar'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
-                compile_out_kotlin, compile_err_kotlin = compile_kotlin.communicate()
-                if compile_err_kotlin:
-                    error.append(compile_err_kotlin.decode('utf-8').strip())
-                    continue
-                process = Popen(['java', '-jar', 'script.jar'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
-            else:
-                process = Popen([task.language, language[task.language], submission.code], stdin=PIPE, stdout=PIPE, stderr=PIPE)
-            output_i, error_i = process.communicate(input=input_data[i].encode())
+        
+        if input_data[i] and expected_output[i]:   
+            output_i, error_i = execute_code(submission.code, task.language, input_data[i])
+            logger.info(output_i)
             try:
-                encoding = chardet.detect(output_i)['encoding']
-                output.append(output_i.decode(encoding).strip())
-                passed.append(output_i.decode(encoding).strip() == expected_output[i])
-            except:
-                pass
+                if isinstance(output_i, bytes):
+                    encoding = chardet.detect(output_i)['encoding']
+                    output_i = output_i.decode(encoding).strip()
+
+                output.append(output_i)
+                logger.info(output)
+                passed.append(output_i == expected_output[i])
+            except Exception as e:
+                logger.info(e)
             try:
-                encoding = chardet.detect(error_i)['encoding']
-                error.append(error_i.decode(encoding).strip())
+                if isinstance(error_i, bytes):
+                        encoding = chardet.detect(error_i)['encoding']
+                        error_i = error_i.decode(encoding).strip()
+                error.append(error_i)
             except:
                 pass
                         
@@ -160,8 +210,9 @@ def submission_detail(request, pk):
         submission.student = request.user.username
         submission.save()
         
-
     return render(request, 'core/submission_detail.html', {'submission': submission, 'output': ', '.join(output), 'error': error, 'passed': passed})
+
+
 
 
 

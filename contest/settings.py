@@ -25,6 +25,19 @@ SECRET_KEY = 'django-insecure-cei4$e_8k0m5kux(og0pk!dwpwobd*$5gobl8&==l=z@n1560l
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+}
 
 
 # Application definition
