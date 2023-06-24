@@ -15,9 +15,11 @@
     </div>    
       <hr>
     <h2>Изменить пароль</h2>
+            <div class="myid">
           <form method="post">
             {% csrf_token %}
             {{ password_form|crispy }}
             <input type="submit" class="btn btn-primary" name="password_change" value="Изменить пароль">
           </form>
+                </div>
 {% endblock content %}
