@@ -1,5 +1,6 @@
 /* Темный фон */
-
+#myid 
+{ max-width: 400px }
 body {
     
   background: url('../images/darktheme.png') no-repeat center center fixed;
