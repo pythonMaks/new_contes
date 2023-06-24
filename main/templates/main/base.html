@@ -122,16 +122,37 @@
         }
       }
     </script>
-    <script>
-    function removeBackground() {
-      document.body.style.backgroundImage = "none";
-  }
+
+<script>
+    function toggleBackground() {
+        if(localStorage.getItem('background') === 'none') {
+            // Возвращаем фон
+            document.body.style.backgroundImage = "url('path_to_your_image.jpg')";
+            localStorage.setItem('background', 'image');
+            document.getElementById('bgButton').innerHTML = "Убрать задний фон";
+        } else {
+            // Убираем фон
+            document.body.style.backgroundImage = "none";
+            localStorage.setItem('background', 'none');
+            document.getElementById('bgButton').innerHTML = "Вернуть фон";
+        }
+    }
+
+    window.onload = function() {
+        if(localStorage.getItem('background') === 'none') {
+            document.body.style.backgroundImage = "none";
+            document.getElementById('bgButton').innerHTML = "Вернуть фон";
+        } else {
+            document.body.style.backgroundImage = "url('path_to_your_image.jpg')";
+            document.getElementById('bgButton').innerHTML = "Убрать задний фон";
+        }
+    };
 </script>
     {% block extra_js %}{% endblock %}
 
 <footer>
   <p><a href="{% url 'blog-home' %}">© ITcontestKG 2023</a></p>
-  <button class="btn btn-link nav-link remove-bg-button" onclick="removeBackground()">Убрать задний фон</button>
+ <button class="btn btn-link nav-link remove-bg-button" id="bgButton" onclick="toggleBackground()">Убрать задний фон</button>
 </footer>
 </main>
 </body>
