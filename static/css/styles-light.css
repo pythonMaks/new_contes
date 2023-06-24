@@ -1,4 +1,6 @@
 /* Body Styles */
+#myid 
+{ max-width: 400px }
 body {
   background: url('../images/lighttheme.png') no-repeat center center fixed;
   -webkit-background-size: cover;
